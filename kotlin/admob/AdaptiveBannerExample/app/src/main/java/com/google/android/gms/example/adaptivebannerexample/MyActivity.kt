@@ -15,18 +15,25 @@
  */
 package com.google.android.gms.example.adaptivebannerexample
 
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.util.DisplayMetrics
 import android.util.Log
+import androidx.annotation.RequiresApi
+import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
 import kotlinx.android.synthetic.main.activity_my.*
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 private const val TAG = "MyActivity"
+@RequiresApi(Build.VERSION_CODES.O)
 
 /** Main Activity. Inflates main activity xml and child fragments. */
 class MyActivity : AppCompatActivity() {
@@ -57,7 +64,7 @@ class MyActivity : AppCompatActivity() {
     setContentView(R.layout.activity_my)
 
     // Log the Mobile Ads SDK version.
-    Log.d(TAG, "Google Mobile Ads SDK Version: " + MobileAds.getVersion())
+//    Log.d(TAG, "Google Mobile Ads SDK Version: " + MobileAds.getVersion())
 
     // Initialize the Mobile Ads SDK.
     MobileAds.initialize(this) {}
@@ -100,6 +107,8 @@ class MyActivity : AppCompatActivity() {
     super.onDestroy()
   }
 
+  lateinit var _start: LocalDateTime
+
   private fun loadBanner() {
     adView.adUnitId = AD_UNIT_ID
 
@@ -110,6 +119,26 @@ class MyActivity : AppCompatActivity() {
 
     // Start loading the ad in the background.
     adView.loadAd(adRequest)
+
+    _start = LocalDateTime.now()
+
+    adView.adListener = object : AdListener() {
+      override fun onAdLoaded() {
+        val end = LocalDateTime.now()
+
+        val diff: Duration = Duration.between(end, _start)
+        Log.d(TAG, "onAdLoaded: ADTEST: ${diff.toMillis()}ms")
+        super.onAdLoaded()
+      }
+
+      @RequiresApi(Build.VERSION_CODES.S)
+      override fun onAdImpression() {
+        val end = LocalDateTime.now()
+        val diff: Duration = Duration.between(end, _start)
+        Log.d(TAG, "onAdImpression: ADTEST: ${diff.toMillis()}ms")
+        super.onAdImpression()
+      }
+    }
   }
 
   companion object {
